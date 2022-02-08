@@ -1,0 +1,142 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+.tbt_shared_inventory_count_input {
+    width: 48%;
+    float: left
+}
+
+.tbt_shared_inventory_count_input .woocommerce-help-tip {
+    float: right;
+}
+
+.tbt_shared_inventory_count_input input {
+    width: 100% !important;
+    vertical-align: middle;
+    margin: 2px 0 0;
+    padding: 5px;
+}
+
+/* product styles */
+[id^=tbt_shared_inventory_product_settings_wrapper] {
+    border: 1px solid #eee;
+    border-width: 1px 0;
+    padding: 0.25em 0;
+}
+
+#tbt_shared_inventory_product_settings_title {
+    margin-left: 15px;
+    margin-bottom: 0;
+}
+
+.tbt_shared_inventory_includes {
+    display: flex;
+    flex-flow: row wrap;
+}
+
+[id^=tbt_shared_inventory_product_row_] > p.tbt-shared-inventory-product-includes-input.form-field {
+    padding-left: 15px !important;
+    flex: 2 2 auto;
+    max-width: 50%;
+    min-width: 280px;
+}
+
+[id^=tbt_shared_inventory_product_row_] > p.tbt-shared-inventory-variation-includes-input.form-field {
+    flex: 2 2 auto;
+    max-width: 50%;
+    min-width: 280px;
+}
+#tbt_shared_inventory_variation_settings_title {
+    padding-left: 0 !important;
+}
+
+/* .tbt-shared-inventory-includes-input span.select2, */
+.tbt-shared-inventory-product-includes-input span.select2,
+.tbt-shared-inventory-variation-includes-input span.select2 {
+    width: 100% !important;
+    max-width: 100%;
+}
+
+[id^=tbt_shared_inventory_product_row_] > p.form-field.tbt-shared-inventory-product-includes-price-input,
+[id^=tbt_shared_inventory_product_row_] > p.form-field.tbt-shared-inventory-product-includes-qty-input,
+[id^=tbt_shared_inventory_product_row_] > p.form-field.tbt-shared-inventory-variation-includes-price-input,
+[id^=tbt_shared_inventory_product_row_] > p.form-field.tbt-shared-inventory-variation-includes-qty-input  {
+    padding-left: 15px !important;
+    flex: 1;
+}
+
+[id^='tbt_shared_inventory_product_row_'] > p.form-field.tbt-shared-inventory-product-includes-input > label,
+[id^='tbt_shared_inventory_product_row_'] > p.form-field.tbt-shared-inventory-product-includes-price-input > label,
+[id^='tbt_shared_inventory_product_row_'] > p.form-field.tbt-shared-inventory-product-includes-qty-input > label,
+[id^='tbt_shared_inventory_product_row_'] > p.form-field.tbt-shared-inventory-variation-includes-input > label,
+[id^='tbt_shared_inventory_product_row_'] > p.form-field.tbt-shared-inventory-variation-includes-price-input > label,
+[id^='tbt_shared_inventory_product_row_'] > p.form-field.tbt-shared-inventory-variation-includes-qty-input > label {
+    width: auto;
+    margin: auto !important;
+}
+
+.tbt-shared-inventory-product-includes-price-input input,  
+.tbt-shared-inventory-product-includes-qty-input input {
+    width: 100% !important;
+    min-width: 85px;
+    height: 31px;
+    border-radius: 5px;
+    border: solid 1px #7e8993;
+}
+
+.tbt-shared-inventory-variation-includes-price-input input,  
+.tbt-shared-inventory-variation-includes-qty-input input {
+    width: 100% !important;
+    min-width: 85px;
+    height: 31px;
+    border-radius: 5px;
+    border: solid 1px #7e8993;
+}
+
+.tbt-shared-inventory-variation-includes-price-input input {
+    margin-top: 2px;
+}
+
+.tbt-shared-inventory-remove-item {
+    height: 31px;
+    margin-top: 22px;
+    align-self: center;
+    background-color: white;
+    border: 1px solid #7e8993;
+    border-radius: 5px;
+    color: orangered;
+    flex: 1;
+    margin-left: 15px;
+    max-width: 130px;
+}
+
+.tbt-shared-inventory-remove-item.variation {
+    margin-left: 15px;
+    height: 31px;
+    margin-top: 23px;
+}
+
+.tbt-shared-inventory-remove-item:hover {
+    background-color: orangered;
+    color: white;
+}
+
+.tbt-shared-inventory-add-item {
+    height: 31px;
+    background-color: white;
+    border: 1px solid #7e8993;
+    border-radius: 5px;
+    color: #2271b1;
+    margin-left: 15px;
+}
+
+.tbt-shared-inventory-add-item.variation-add {
+    margin-left: 0;
+}
+
+.tbt-shared-inventory-add-item:hover {
+    background-color: #2271b1;
+    color: white; 
+}

@@ -1,0 +1,84 @@
+.tbt-shared-inventory-bundles {
+    margin-bottom: 10px;
+}
+
+.tbt-shared-inventory-bundles {
+    display: block;
+    width: 100%;
+    clear: both;
+}
+
+.tbt-shared-inventory-bundles .tbt-shared-text, .tbt-shared-inventory-bundles .tbt-shared-products {
+    margin: 0 0 15px 0;
+}
+
+.tbt-shared-inventory-bundles .tbt-shared-text {
+    white-space: pre-line;
+}
+
+.tbt-shared-products .tbt-shared-product {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    margin: 0;
+    border-bottom: 1px dotted #e5e5e5;
+}
+
+.tbt-shared-products .tbt-shared-product > div {
+    padding: 0 5px;
+}
+
+.tbt-shared-products .tbt-shared-product > div:last-child {
+    text-align: end;
+}
+
+.tbt-shared-products .tbt-shared-product .tbt-shared-thumb {
+    width: 50px;
+}
+
+.tbt-shared-products .tbt-shared-product .tbt-shared-thumb img {
+    width: 40px;
+    max-width: 40px;
+    height: auto;
+    display: block;
+}
+
+.tbt-shared-products .tbt-shared-product .tbt-shared-title {
+    flex-grow: 1;
+    text-align: start;
+}
+
+.tbt-shared-products {
+    border-width: 1px 0 0 0;
+    border-style: dotted;
+    border-color: #e5e5e5;
+}
+
+.tbt-shared-products .tbt-shared-product > td {
+    padding: 10px 10px 10px 0;
+    background-color: transparent;
+    border-width: 0 0 1px 0;
+    border-style: dotted;
+    border-color: #e5e5e5;
+}
+
+.tbt-shared-products .tbt-shared-product > td:last-child {
+    padding-right: 0;
+}
+
+.tbt-shared-alert {
+    padding: 6px 10px 6px 14px;
+    border-left: 4px solid #222;
+    background-color: #eeeeee;
+    font-size: 14px;
+}
+
+body.woocommerce-no-js tbt-shared-inventory-bundles + form.cart {
+    display: none;
+}
+
+.tbt-shared-disabled {
+    opacity: .5 !important;
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
