@@ -267,8 +267,11 @@ class Tbt_Shared_Inventory_Admin {
 	    $variation = wc_get_product( $variation_id );
 
 		if ( ! empty( $_POST['tbt_shared_inventory_count_'] ) && ! empty( $_POST['tbt_shared_inventory_count_'][ $i ] ) ) {
-			$variation->update_meta_data( '_tbt_shared_inventory_count', absint( $_POST['tbt_shared_inventory_count_'][ $i ] ) );
 
+			$variation->update_meta_data( '_tbt_shared_inventory_count', absint( $_POST['tbt_shared_inventory_count_'][ $i ][0] ) );
+
+		} else {
+			$variation->delete_meta_data( '_tbt_shared_inventory_count' );
 		}
 
 		$bundle_array = array();

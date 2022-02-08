@@ -112,8 +112,8 @@ class Tbt_Shared_Inventory_Public {
 	function tbt_shared_inventory_check_stock_cart( $passed, $product_id, $quantity, $variation_id = 0 ) {
 
 		$current_id 	 	= isset( $variation_id ) && !empty( $variation_id ) ? $variation_id : $product_id;
-		$product		 	= wc_get_product( $current_id ); 
-		$back_order 	 	= $product->backorders_allowed();
+		$product		 	= wc_get_product( $current_id );
+		$manage_stock	  	= $product->get_manage_stock(); 
 		$product_count	 	= intval( $product->get_meta( '_tbt_shared_inventory_count', true ) 
 								? $product->get_meta( '_tbt_shared_inventory_count', true ) : 1 );
 		$requested_qty 	 	= $product_count * $quantity;
@@ -124,14 +124,14 @@ class Tbt_Shared_Inventory_Public {
 		$can_fulfill_bundle = true;
 
 		// exempt backorder products - bail early bail often
-		if( $back_order ) {
+		if( $product->backorders_allowed() ) {
 
 			return true;
 
 		}
 
 		//if the requested quantity is greater than what we have bail - the logic only gets more intense from here
-		if ( !$product->has_enough_stock($requested_qty) ) {
+		if ( !$product->has_enough_stock( $requested_qty ) ) {
 
 			wc_add_notice("Sorry, we don't have enough stock to fulfill your request. Please contact us about placing an order for this item.", 'error');
 			return false;
@@ -160,18 +160,19 @@ class Tbt_Shared_Inventory_Public {
 		// make sure we have enough to fulfill this added quantity
 	
 		$cart_contents = $this->check_cart_contents( WC()->cart, true );
+		$id_managing_stock = $manage_stock === 'parent' ? $product_id : $variation_id;
 
-		if ( array_key_exists( $current_id, $cart_contents ) ) {
+		if ( array_key_exists( $id_managing_stock, $cart_contents ) ) {
 
-			$cart_contents[ $current_id ] += $requested_qty;
+			$cart_contents[ $id_managing_stock ] += $requested_qty;
 
 		} else {
 
-			$cart_contents[ $current_id ] = $requested_qty;
+			$cart_contents[ $id_managing_stock ] = $requested_qty;
 
 		}
 
-		if( !$product->has_enough_stock( $cart_contents[ $current_id ] ) ) {
+		if( !$product->has_enough_stock( $cart_contents[ $id_managing_stock ] ) ) {
 
 			wc_add_notice("Sorry, we don't have enough stock to fulfill your request for this item. Please contact us about placing an order for this item.", 'error');
 			return false;
@@ -197,12 +198,11 @@ class Tbt_Shared_Inventory_Public {
 
 		// Loop for all products in cart
 		foreach ( $cart->get_cart() as $key => $value ) { 
-	
-			$current_id 	  	= isset( $value['variation_id'] ) && !empty( $value['variation_id'] ) 
-									? $value['variation_id'] : $value['product_id'];
-			$product		  	= wc_get_product( $current_id );
+			$product_id			= $value['product_id'];
+			$variation_id		= $value['variation_id'];
+			$current_id 	  	= $variation_id === 0 ? $product_id : $variation_id;
+			$product		  	= $value['data'];
 			$quantity_in_cart	= $value['quantity'];
-			$back_order 	  	= $product->backorders_allowed();
 			$manage_stock	  	= $product->get_manage_stock();
 
 			//shared inventory settings
@@ -215,7 +215,7 @@ class Tbt_Shared_Inventory_Public {
 			// exempt backorder products
 			// if the product is marked to allow backorders then 
 			// assume all of the products in the bundle are ok to be backordered
-			if( $back_order ) {
+			if( $product->backorders_allowed() ) {
 
 				continue;
 
@@ -225,12 +225,11 @@ class Tbt_Shared_Inventory_Public {
 				foreach( $bundled_items as $item ) {
 					$bundled_product 					= wc_get_product( $item['id'] );
 					$bundled_product_count 				= $item['qty'];
-					$bundled_product_back_order 	  	= $bundled_product->backorders_allowed();
 					$bundled_product_available_stock  	= $bundled_product->get_stock_quantity();
 					$bundled_requested_qty 	  			= $product_count * $bundled_product_count * $quantity_in_cart;
 
 					// exempt individual backorder products in a bundle
-					if( $bundled_product_back_order ) {
+					if( $bundled_product->backorders_allowed() ) {
 					
 						continue;
 					
@@ -256,25 +255,26 @@ class Tbt_Shared_Inventory_Public {
 			} else {
 
 				//bail out if the count isn't set or is set to 1
-				if ( empty($product_count) || $product_count === 1 ) {
+				if ( empty($product_count) ) {
 
 					continue;
 
 				}
 
 				$requested_qty = $product_count * $quantity_in_cart;
-			
-				if ( array_key_exists( $product->get_id(), $products_in_cart ) ) {
+				$id_managing_stock = $manage_stock === 'parent' ? $product_id : $variation_id;
 
-					$products_in_cart[ $product->get_id() ] += $requested_qty;
+				if ( array_key_exists( $id_managing_stock, $products_in_cart ) ) {
+
+					$products_in_cart[ $id_managing_stock ] += $requested_qty;
 
 				} else {
 
-					$products_in_cart[ $product->get_id() ] = $requested_qty;
+					$products_in_cart[ $id_managing_stock ] = $requested_qty;
 
 				}
 
-				if ( !$product->has_enough_stock( $products_in_cart[ $product->get_id() ] ) ) {
+				if ( !$product->has_enough_stock( $products_in_cart[ $id_managing_stock ] ) ) {
 					$out_of_stock_cart_items[$key] = $current_id;
 				}
 			}
@@ -419,41 +419,41 @@ class Tbt_Shared_Inventory_Public {
 	 * @return void
 	 */
 	function tbt_shared_inventory_product_bundle_display( $product = null ) {
-
+		
 		if ( ! $product ) {
 			global $product;
 		}
-
+		
 		$products[] = $product; 
 
-		if ($product->is_type( 'variable' ) ) {
+		if ( $product->is_type( 'variable' ) ) {
 			$products = array();
-			foreach($product->get_available_variations() as $key => $variation) {
-				$products[] = wc_get_product($variation['variation_id']);
+			foreach( $product->get_available_variations() as $key => $variation ) {
+				$products[] = wc_get_product( $variation['variation_id'] );
 			}
 		}
-
-		foreach($products as $key => $product) {
-			$is_bundle 	= !empty( $product->get_meta( 'tbt_shared_inventory_variation_bundle', true ) ) || !empty( $product->get_meta( '_tbt_shared_inventory_product_bundle', true ) )
-							&& $product->get_meta( 'tbt_shared_inventory_variation_bundle', true ) || $product->get_meta( '_tbt_shared_inventory_product_bundle', true ) === 'yes' ? true : false;
+		
+		foreach( $products as $key => $prod ) {
+			$is_bundle 	= !empty( $prod->get_meta( 'tbt_shared_inventory_variation_bundle', true ) ) || !empty( $prod->get_meta( '_tbt_shared_inventory_product_bundle', true ) )
+							&& $prod->get_meta( 'tbt_shared_inventory_variation_bundle', true ) || $prod->get_meta( '_tbt_shared_inventory_product_bundle', true ) === 'yes' ? true : false;
 			
-			if ( ! $product || ! $is_bundle ) {
+			if ( ! $prod || ! $is_bundle ) {
 				return;
 			}
 
-			$bundled_items = $product->get_meta( 'tbt-shared-inventory-includes' );
+			$bundled_items = $prod->get_meta( 'tbt-shared-inventory-includes' );
 
 			if ( ! empty( $bundled_items ) ) {
-				$style = $product->get_meta( 'tbt_shared_inventory_variation_bundle', true ) === 'yes' ? 'display:none' : '';
+				$style = $prod->get_meta( 'tbt_shared_inventory_variation_bundle', true ) === 'yes' ? 'display:none' : '';
 				echo '<div id="tbt-shared-' . $key . '" class="tbt-shared-inventory-bundles" style="' . $style . '">';
 				echo '<div class="tbt-shared_before_text tbt-shared-before-text tbt-shared-text">' . do_shortcode( stripslashes( "Products in bundle:" ) ) . '</div>';
 				echo '<div class="tbt-shared-products">';
 
 				foreach ( $bundled_items as $bundle_item ) {
-					$product = wc_get_product($bundle_item['id']);
+					$item = wc_get_product( $bundle_item['id'] );
 					echo '<div class="tbt-shared-product">';
-					echo '<div class="tbt-shared-thumb">' . $product->get_image() . '</div>';
-					echo '<div class="tbt-shared-title">'. $bundle_item['qty'] . ' &times; <a ' . ( get_option( '_tbt-shared_bundled_link', 'yes' ) === 'yes_popup' ? 'class="woosq-link no-ajaxy" data-id="' . $product->get_id() . '" data-context="tbt-shared"' : '' ) . ' href="' . $product->get_permalink() . '" ' . 'target="_blank"' . '>' . $product->get_name() . '</a></div>';
+					echo '<div class="tbt-shared-thumb">' . $item->get_image() . '</div>';
+					echo '<div class="tbt-shared-title">'. $bundle_item['qty'] . ' &times; <a ' . ( get_option( '_tbt-shared_bundled_link', 'yes' ) === 'yes_popup' ? 'class="woosq-link no-ajaxy" data-id="' . $item->get_id() . '" data-context="tbt-shared"' : '' ) . ' href="' . $item->get_permalink() . '" ' . 'target="_blank"' . '>' . $item->get_name() . '</a></div>';
 					echo '</div><!-- /tbt-shared-product -->';
 				}
 
@@ -619,7 +619,7 @@ class Tbt_Shared_Inventory_Public {
 	function tbt_shared_inventory_cart_item_removed( $cart_item_key, $cart ) {
 
 		foreach( $cart->cart_contents as $cart_key => $item ) {
-			if ( $item['tbt_shared_parent_key'] === $cart_item_key ) {
+			if ( !empty( $item['tbt_shared_parent_key'] ) && $item['tbt_shared_parent_key'] === $cart_item_key ) {
 				$cart->remove_cart_item( $cart_key );
 			}
 		}

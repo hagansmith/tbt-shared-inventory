@@ -46,6 +46,15 @@
 			});
 		}
 
+		$(document).on('change', '.variable_manage_stock', function() {
+			$(this).closest('.woocommerce_variation').find('.tbt_shared_inventory_settings').hide();
+
+			if (! $(this).is(":checked")) {
+				$(this).closest('.woocommerce_variation').find('.tbt_shared_inventory_settings').show();
+			}
+
+		});
+
 		$(document).on('change', '.variable_is_bundle', function(){
 			$(this).closest('.woocommerce_variation').find('.show_if_tbt_bundle').hide();
 			
