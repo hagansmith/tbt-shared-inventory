@@ -429,16 +429,18 @@ class Tbt_Shared_Inventory_Public {
 		if ( $product->is_type( 'variable' ) ) {
 			$products = array();
 			foreach( $product->get_available_variations() as $key => $variation ) {
+
 				$products[] = wc_get_product( $variation['variation_id'] );
 			}
 		}
-		
+
 		foreach( $products as $key => $prod ) {
-			$is_bundle 	= !empty( $prod->get_meta( 'tbt_shared_inventory_variation_bundle', true ) ) || !empty( $prod->get_meta( '_tbt_shared_inventory_product_bundle', true ) )
-							&& $prod->get_meta( 'tbt_shared_inventory_variation_bundle', true ) || $prod->get_meta( '_tbt_shared_inventory_product_bundle', true ) === 'yes' ? true : false;
+
+			$is_bundle 	= ( !empty( $prod->get_meta( 'tbt_shared_inventory_variation_bundle', true ) ) || !empty( $prod->get_meta( '_tbt_shared_inventory_product_bundle', true ) ) )
+							&& ( $prod->get_meta( 'tbt_shared_inventory_variation_bundle', true ) === 'yes' || $prod->get_meta( '_tbt_shared_inventory_product_bundle', true ) === 'yes' ) ? true : false;
 			
 			if ( ! $prod || ! $is_bundle ) {
-				return;
+				continue;
 			}
 
 			$bundled_items = $prod->get_meta( 'tbt-shared-inventory-includes' );

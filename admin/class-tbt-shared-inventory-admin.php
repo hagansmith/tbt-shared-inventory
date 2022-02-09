@@ -231,6 +231,7 @@ class Tbt_Shared_Inventory_Admin {
 			'desc_tip'			=> 'true',
 			'description'		=> __( 'Enter the desired adjustment to the product inventory when this variation is purchased.', 'woocommerce' ),
 			'type' 				=> 'number',
+			'placeholder'		=> 1,
 			'custom_attributes'	=> array(
 				'min'	=> '1',
 				'step'	=> '1',
@@ -266,11 +267,12 @@ class Tbt_Shared_Inventory_Admin {
 
 	    $variation = wc_get_product( $variation_id );
 
-		if ( ! empty( $_POST['tbt_shared_inventory_count_'] ) && ! empty( $_POST['tbt_shared_inventory_count_'][ $i ] ) ) {
+		if ( ! empty( $_POST['tbt_shared_inventory_count_'][ $i ][0] ) ) {
 
 			$variation->update_meta_data( '_tbt_shared_inventory_count', absint( $_POST['tbt_shared_inventory_count_'][ $i ][0] ) );
 
 		} else {
+
 			$variation->delete_meta_data( '_tbt_shared_inventory_count' );
 		}
 
