@@ -101,14 +101,13 @@
 
 .tbt-shared-inventory-remove-item {
     height: 31px;
-    margin-top: 22px;
+    margin: 23px 15px 15px 0;
     align-self: center;
     background-color: white;
     border: 1px solid #7e8993;
     border-radius: 5px;
     color: orangered;
     flex: 1;
-    margin-left: 15px;
     max-width: 130px;
 }
 

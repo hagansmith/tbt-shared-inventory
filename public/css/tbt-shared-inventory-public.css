@@ -82,3 +82,7 @@ body.woocommerce-no-js tbt-shared-inventory-bundles + form.cart {
     pointer-events: none !important;
     cursor: not-allowed !important;
 }
+
+.tbt-shared-bundled-list {
+    list-style: none;
+}

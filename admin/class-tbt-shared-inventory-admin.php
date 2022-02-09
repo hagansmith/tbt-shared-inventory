@@ -186,9 +186,9 @@ class Tbt_Shared_Inventory_Admin {
 
     	$options['tbt_shared_inventory_product_bundle'] = array(
     	    'id'            => '_tbt_shared_inventory_product_bundle',
-    	    'wrapper_class' => "tbt_shared_inventory_bundle show_if_simple show_if_variable hide_if_deposit hide_if_subscription hide_if_variable-subscription hide_if_grouped hide_if_external",
+    	    'wrapper_class' => "tbt_shared_inventory_bundle show_if_simple hide_if_deposit hide_if_subscription hide_if_variable-subscription hide_if_grouped hide_if_external",
     	    'label'         => __( "Product Bundle", 'tbt_shared_inventory' ),
-    	    'description'   => __( "Check if this product is a bundle. If the product is a variable product any products or variations that are set at the product level will be included in all the variations.", 'tbt_shared_inventory' ),
+    	    'description'   => __( "Check if this product is a bundle.", 'tbt_shared_inventory' ),
     	    'default'       => "no",
     	);
     	return $options;
@@ -227,7 +227,7 @@ class Tbt_Shared_Inventory_Admin {
 			'name'				=> "tbt_shared_inventory_count_[{$loop}][]",
 			'wrapper_class'		=> "tbt_shared_inventory_count_input",
 			'value'				=> $variation->get_meta( '_tbt_shared_inventory_count' ),
-			'label'				=> __( 'Reduce product inventory count by this number for each of this variation sold', 'woocommerce' ),
+			'label'				=> __( 'Inventory multiplier', 'woocommerce' ),
 			'desc_tip'			=> 'true',
 			'description'		=> __( 'Enter the desired adjustment to the product inventory when this variation is purchased.', 'woocommerce' ),
 			'type' 				=> 'number',
@@ -279,7 +279,7 @@ class Tbt_Shared_Inventory_Admin {
 		// save the bundled items to the product
 		if ( isset( $_POST['tbt-shared-inventory-variation-includes'] ) && ! empty( $_POST['tbt-shared-inventory-variation-includes'][ $i ] ) ) {
 			foreach ( $_POST['tbt-shared-inventory-variation-includes'][ $i ] as $key => $item_id ) {
-				$price = floatval( ! empty( $_POST['tbt-shared-inventory-variation-includes-price'][ $i ][ $key ] ) 
+				$price = floatval( isset( $_POST['tbt-shared-inventory-variation-includes-price'][ $i ][ $key ] ) 
 							? $_POST['tbt-shared-inventory-variation-includes-price'][ $i ][ $key ][0] 
 							: ( wc_get_product( $item_id ) ? wc_get_product( $item_id )->get_price() : '' ) );
 				$bundle_array[] = array(

@@ -21,7 +21,7 @@ woocommerce_wp_select( array(
 ) );
 
 // price setting
-$price = isset($item) && !empty($item['price']) ? $item['price'] : ( !empty($product) ? $product->get_price() : '');
+$price = isset($item) && isset($item['price']) ? $item['price'] :  '';
 
 woocommerce_wp_text_input( array(
     'id'				=> "tbt-shared-inventory-{$type}-includes-price" . $loop_val . "[{$key}][]",

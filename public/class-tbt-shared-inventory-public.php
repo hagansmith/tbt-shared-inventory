@@ -453,7 +453,7 @@ class Tbt_Shared_Inventory_Public {
 					$item = wc_get_product( $bundle_item['id'] );
 					echo '<div class="tbt-shared-product">';
 					echo '<div class="tbt-shared-thumb">' . $item->get_image() . '</div>';
-					echo '<div class="tbt-shared-title">'. $bundle_item['qty'] . ' &times; <a ' . ( get_option( '_tbt-shared_bundled_link', 'yes' ) === 'yes_popup' ? 'class="woosq-link no-ajaxy" data-id="' . $item->get_id() . '" data-context="tbt-shared"' : '' ) . ' href="' . $item->get_permalink() . '" ' . 'target="_blank"' . '>' . $item->get_name() . '</a></div>';
+					echo '<div class="tbt-shared-title">'. $bundle_item['qty'] . ' &times; <a href="' . $item->get_permalink() . '" ' . 'target="_blank"' . '>' . $item->get_name() . '</a></div>';
 					echo '</div><!-- /tbt-shared-product -->';
 				}
 
@@ -489,7 +489,18 @@ class Tbt_Shared_Inventory_Public {
 			foreach( $bundled_items as $item ) {
 				$name[] = $item['qty'] . ' &times; ' . get_the_title($item['id']);
 			}
-			return '<a href="' . get_permalink( $product->get_id() ) . '">' . $product->get_name() . '</a> &rarr; ' . implode(', ', $name);
+
+			$combined_name = '<a href="' . get_permalink( $product->get_id() ) . '">' . $product->get_name() . '</a> <ul class="tbt-shared-bundled-list">'; 
+			
+			foreach( $bundled_items as $item ) {
+			
+				$combined_name .= "<li>" . $item['qty'] . ' &times; ' . get_the_title($item['id']) . "</li>";
+			
+			}
+			
+			$combined_name .= '</ul>';
+
+			return $combined_name;
 
 		}
 
@@ -634,13 +645,14 @@ class Tbt_Shared_Inventory_Public {
 	 */
 	function tbt_shared_inventory_restore_cart_item( $cart_item_key ) {
 		if ( isset( WC()->cart->cart_contents[ $cart_item_key ]['tbt_shared_child_ids'] ) ) {
-
-			$product_id 	= WC()->cart->cart_contents[ $cart_item_key ]['variation_id'] === 0 
-								? WC()->cart->cart_contents[ $cart_item_key ]['product_id'] 
-								: WC()->cart->cart_contents[ $cart_item_key ]['variation_id'];
-			$quantity  		= WC()->cart->cart_contents[ $cart_item_key ]['quantity'];
-
-			$this->tbt_shared_inventory_split_order_bundle( $cart_item_key, $product_id, $quantity, null, null, null );
+			$this->tbt_shared_inventory_split_order_bundle( 
+				$cart_item_key, 
+				WC()->cart->cart_contents[ $cart_item_key ]['product_id'], 
+				WC()->cart->cart_contents[ $cart_item_key ]['quantity'], 
+				WC()->cart->cart_contents[ $cart_item_key ]['variation_id'], 
+				null, 
+				null 
+			);
 		}
 
 	}
