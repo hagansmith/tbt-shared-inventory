@@ -121,7 +121,6 @@ class Tbt_Shared_Inventory_Public {
 								&& $product->get_meta( 'tbt_shared_inventory_variation_bundle', true ) === 'yes' ? true : false;
 		$is_prod_bundle		= !empty( $product->get_meta( '_tbt_shared_inventory_product_bundle', true ) ) 
 								&&$product->get_meta( '_tbt_shared_inventory_product_bundle', true ) === 'yes' ? true : false;
-		$can_fulfill_bundle = true;
 
 		// exempt backorder products - bail early bail often
 		if( $product->backorders_allowed() ) {
@@ -140,25 +139,16 @@ class Tbt_Shared_Inventory_Public {
 
 		if ( ( $is_var_bundle || $is_prod_bundle ) && !empty( $product->get_meta( 'tbt-shared-inventory-includes', true ) ) ) {
 			foreach( $product->get_meta( 'tbt-shared-inventory-includes', true ) as $bundle_item ) {
-				$bundle_product 		= wc_get_product( $bundle_item['id'] );
+				$bundle_product = wc_get_product( $bundle_item['id'] );
 				if ( !$bundle_product->has_enough_stock( $bundle_item['qty'] * $requested_qty ) ) {
-					$can_fulfill_bundle = false;
-					break;
+					wc_add_notice( "Sorry, we don't have enough stock to fulfill your request. Please contact us about placing an order for this item.", 'error' );
+					return false;
 				}
 			}
 		}
 
-		//check the requested quantity against the product or parent product stock value
-		if( !$can_fulfill_bundle ) {
-
-			wc_add_notice( "Sorry, we don't have enough stock to fulfill your request. Please contact us about placing an order for this item.", 'error' );
-			return false;
-
-		}
-	
 		// check if the item we are adding to the cart is another variation of an item in the cart 
 		// make sure we have enough to fulfill this added quantity
-	
 		$cart_contents = $this->check_cart_contents( WC()->cart, true );
 		$id_managing_stock = $manage_stock === 'parent' ? $product_id : $variation_id;
 
@@ -207,9 +197,9 @@ class Tbt_Shared_Inventory_Public {
 
 			//shared inventory settings
 			$product_count	  	= intval( $product->get_meta('_tbt_shared_inventory_count', true ) 
-									? $product->get_meta( '_tbt_shared_inventory_count', true) : 1 );						
-			$is_bundle		  	= !empty( $product->get_meta( 'tbt_shared_inventory_variation_bundle', true ) ) || !empty( $product->get_meta( '_tbt_shared_inventory_product_bundle', true ) )
-									&& $product->get_meta( 'tbt_shared_inventory_variation_bundle', true ) || $product->get_meta( '_tbt_shared_inventory_product_bundle', true ) === 'yes' ? true : false;
+									? $product->get_meta( '_tbt_shared_inventory_count', true ) : 1 );						
+			$is_bundle		  	= ( !empty( $product->get_meta( 'tbt_shared_inventory_variation_bundle', true ) ) || !empty( $product->get_meta( '_tbt_shared_inventory_product_bundle', true ) ) )
+									&& ( $product->get_meta( 'tbt_shared_inventory_variation_bundle', true ) === 'yes' || $product->get_meta( '_tbt_shared_inventory_product_bundle', true ) === 'yes' ) ? true : false;
 			$bundled_items 	  	= $is_bundle ? $product->get_meta( 'tbt-shared-inventory-includes' ) : [];
 
 			// exempt backorder products
@@ -225,7 +215,6 @@ class Tbt_Shared_Inventory_Public {
 				foreach( $bundled_items as $item ) {
 					$bundled_product 					= wc_get_product( $item['id'] );
 					$bundled_product_count 				= $item['qty'];
-					$bundled_product_available_stock  	= $bundled_product->get_stock_quantity();
 					$bundled_requested_qty 	  			= $product_count * $bundled_product_count * $quantity_in_cart;
 
 					// exempt individual backorder products in a bundle
@@ -280,7 +269,7 @@ class Tbt_Shared_Inventory_Public {
 			}
 		}
 
-		if ( $return_cart_totals) {
+		if ( $return_cart_totals ) {
 
 			return $products_in_cart;
 
@@ -300,15 +289,34 @@ class Tbt_Shared_Inventory_Public {
 	 * @return void
 	 */
 	function tbt_shared_inventory_check_stock_cart_change ( $cart_item_key, $quantity, $old_quantity, $cart ) {
+		
+		$bundled_items 			= !empty($cart->cart_contents[ $cart_item_key ]['tbt_shared_child_keys']) ? $cart->cart_contents[ $cart_item_key ]['tbt_shared_child_keys'] : [];
+		$bundle_out_of_stock 	= false;
+		if ( empty( $bundled_items ) ) {
+			return;
+		}
 
-		$out_of_stock_cart_items = $this->check_cart_contents( $cart );
+		$out_of_stock_cart_items = $this->check_cart_contents( $cart );		
 
-		if ( !empty( $out_of_stock_cart_items ) ) { 
-			if ( array_key_exists( $cart_item_key, $out_of_stock_cart_items ) ) {
-				$cart->cart_contents[ $cart_item_key ]['quantity'] = $old_quantity;
-				$product_name = $cart->cart_contents[ $cart_item_key ]['data']->get_name();
-				wc_add_notice( "Sorry, we don't have enough stock to fulfill your request for " . $quantity .  " - " . $product_name . ". We have set the quantity back in your cart and you can continue checking out or remove the item.", 'error' );
+		if ( ! empty( $out_of_stock_cart_items ) ) {
+			foreach( $bundled_items as $cart_key => $child_item ) {
+				$bundle_out_of_stock = array_key_exists( $child_item, $out_of_stock_cart_items );
+				if ( $bundle_out_of_stock === true ) {
+					break;
+				}
 			}
+		}
+
+		if ( $bundle_out_of_stock ) {
+			$product_name = $cart->cart_contents[ $cart_item_key ]['data']->get_name();
+			$cart->set_quantity( $cart_item_key, $old_quantity, false );
+			wc_add_notice( "Sorry, we don't have enough stock to fulfill your request for " . $quantity .  " - " . $product_name . ". We have set the quantity back in your cart and you can continue checking out or remove the item.", 'error' );
+		} else {
+			foreach( $bundled_items as $item_key ) {
+				$qty = $cart->cart_contents[ $item_key ]['tbt_shared_qty'];
+				$cart->set_quantity( $item_key, $quantity * $qty, false );
+			}
+
 		}
 
 	}
@@ -377,6 +385,7 @@ class Tbt_Shared_Inventory_Public {
 					'tbt_shared_parent_id'  => $parent_id,
 					'tbt_shared_parent_key' => $cart_item_key,
 					'tbt_shared_price'		=> $bundled_item['price'],
+					'tbt_shared_qty'		=> $bundled_item['qty'],
 				);
 				$bundled_cart_item_key 	= $cart->add_to_cart( $bundled_product_id, $bundled_item['qty'] * $ordered_qty, $bundled_variation_id, array(), $bundled_data );
 				$bundled_cart_item 	 	= $cart->get_cart_item( $bundled_cart_item_key );
@@ -384,7 +393,8 @@ class Tbt_Shared_Inventory_Public {
 				// update the new unrolled item
 				if ($bundled_cart_item) {
 					$bundled_items_total += $bundled_item['price'] * $bundled_item['qty'] * $ordered_qty;
-					$cart->cart_contents[ $cart_item_key ]['tbt_shared_child_ids'][] = $bundled_item['id']; 
+					$cart->cart_contents[ $cart_item_key ]['tbt_shared_child_ids'][] = $bundled_item['id'];
+					$cart->cart_contents[ $cart_item_key ]['tbt_shared_child_keys'][] = $bundled_cart_item_key; 
 				}
 			}
 
@@ -596,6 +606,7 @@ class Tbt_Shared_Inventory_Public {
 	 * @return void
 	 */
 	function tbt_shared_inventory_item_visible( $visible, $cart_item ) {
+		return $visible;
 		if ( isset( $cart_item['tbt_shared_parent_id'] ) ) {
 			return false;
 		}

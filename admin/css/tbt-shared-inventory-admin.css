@@ -81,7 +81,7 @@
 .tbt-shared-inventory-product-includes-qty-input input {
     width: 100% !important;
     min-width: 85px;
-    height: 31px;
+    height: 30px;
     border-radius: 5px;
     border: solid 1px #7e8993;
 }
@@ -90,7 +90,7 @@
 .tbt-shared-inventory-variation-includes-qty-input input {
     width: 100% !important;
     min-width: 85px;
-    height: 31px;
+    height: 30px;
     border-radius: 5px;
     border: solid 1px #7e8993;
 }
@@ -100,8 +100,8 @@
 }
 
 .tbt-shared-inventory-remove-item {
-    height: 31px;
-    margin: 23px 15px 15px 0;
+    height: 30px;
+    margin: 35px 15px 15px 15px;
     align-self: center;
     background-color: white;
     border: 1px solid #7e8993;
