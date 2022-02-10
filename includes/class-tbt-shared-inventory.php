@@ -214,7 +214,7 @@ class Tbt_Shared_Inventory {
 		$this->loader->add_action( 'woocommerce_before_calculate_totals', $plugin_public, 'tbt_shared_inventory_before_calculate_totals', 10 );
 		$this->loader->add_filter( 'woocommerce_cart_item_price', $plugin_public, 'tbt_shared_inventory_cart_item_price', 10, 2 );
 		$this->loader->add_filter( 'woocommerce_cart_item_subtotal', $plugin_public, 'tbt_shared_inventory_cart_item_subtotal', 10, 2 );
-		$this->loader->add_action( 'woocommerce_after_cart_item_quantity_update', $plugin_public, 'tbt_shared_inventory_check_stock_cart_change', 20, 4 );
+		$this->loader->add_action( 'woocommerce_after_cart_item_quantity_update', $plugin_public, 'tbt_shared_inventory_after_cart_item_quantity_update', 20, 4 );
 		$this->loader->add_action( 'woocommerce_after_checkout_validation', $plugin_public, 'tbt_shared_inventory_check_stock_checkout', 10, 2);
 
 		$this->loader->add_action( 'woocommerce_checkout_create_order_line_item', $plugin_public, 'tbt_shared_inventory_add_order_item_meta', 10, 3 );

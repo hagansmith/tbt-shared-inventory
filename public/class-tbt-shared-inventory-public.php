@@ -205,7 +205,8 @@ class Tbt_Shared_Inventory_Public {
 			// exempt backorder products
 			// if the product is marked to allow backorders then 
 			// assume all of the products in the bundle are ok to be backordered
-			if( $product->backorders_allowed() ) {
+			// if the product is a child of a bundle it will be handled in the parent loop
+			if( $product->backorders_allowed() || !empty($value['tbt_shared_parent_id']) ) {
 
 				continue;
 
@@ -280,7 +281,7 @@ class Tbt_Shared_Inventory_Public {
 	}
 
 	/**
-	 * Verifiy there is still enough stock when the quantity in the cart is updated
+	 * Verifiy there is still enough stock when the quantity in the cart is updated and update child products accordingly
 	 *
 	 * @param integer $cart_item_key
 	 * @param integer $quantity
@@ -288,33 +289,26 @@ class Tbt_Shared_Inventory_Public {
 	 * @param mixed   $cart
 	 * @return void
 	 */
-	function tbt_shared_inventory_check_stock_cart_change ( $cart_item_key, $quantity, $old_quantity, $cart ) {
-		
+	function tbt_shared_inventory_after_cart_item_quantity_update ( $cart_item_key, $quantity, $old_quantity, $cart ) {
+
 		$bundled_items 			= !empty($cart->cart_contents[ $cart_item_key ]['tbt_shared_child_keys']) ? $cart->cart_contents[ $cart_item_key ]['tbt_shared_child_keys'] : [];
 		$bundle_out_of_stock 	= false;
+
 		if ( empty( $bundled_items ) ) {
 			return;
 		}
 
 		$out_of_stock_cart_items = $this->check_cart_contents( $cart );		
 
-		if ( ! empty( $out_of_stock_cart_items ) ) {
-			foreach( $bundled_items as $cart_key => $child_item ) {
-				$bundle_out_of_stock = array_key_exists( $child_item, $out_of_stock_cart_items );
-				if ( $bundle_out_of_stock === true ) {
-					break;
-				}
-			}
-		}
-
-		if ( $bundle_out_of_stock ) {
+		if ( array_key_exists( $cart_item_key, $out_of_stock_cart_items ) ) {
+			// none of the bundled items have been affected just set the parent back to where it was
 			$product_name = $cart->cart_contents[ $cart_item_key ]['data']->get_name();
-			$cart->set_quantity( $cart_item_key, $old_quantity, false );
+			$cart->cart_contents[ $cart_item_key ]['quantity'] = $old_quantity;
 			wc_add_notice( "Sorry, we don't have enough stock to fulfill your request for " . $quantity .  " - " . $product_name . ". We have set the quantity back in your cart and you can continue checking out or remove the item.", 'error' );
 		} else {
 			foreach( $bundled_items as $item_key ) {
 				$qty = $cart->cart_contents[ $item_key ]['tbt_shared_qty'];
-				$cart->set_quantity( $item_key, $quantity * $qty, false );
+				$cart->cart_contents[ $item_key ]['quantity'] = $qty;
 			}
 
 		}
@@ -606,7 +600,6 @@ class Tbt_Shared_Inventory_Public {
 	 * @return void
 	 */
 	function tbt_shared_inventory_item_visible( $visible, $cart_item ) {
-		return $visible;
 		if ( isset( $cart_item['tbt_shared_parent_id'] ) ) {
 			return false;
 		}
