@@ -738,7 +738,7 @@ class Tbt_Shared_Inventory_Public {
 	 */
 	function tbt_shared_hidden_order_item_meta( $hidden ) {
 		return array_merge( $hidden, array(
-			'_tbt_shared_parent_id',
+			// '_tbt_shared_parent_id',
 			'_tbt_shared_child_ids',
 			'_tbt_shared_price',
 			'tbt_shared_parent_id',
