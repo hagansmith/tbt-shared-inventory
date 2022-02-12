@@ -307,7 +307,7 @@ class Tbt_Shared_Inventory_Public {
 			wc_add_notice( "Sorry, we don't have enough stock to fulfill your request for " . $quantity .  " - " . $product_name . ". We have set the quantity back in your cart and you can continue checking out or remove the item.", 'error' );
 		} else {
 			foreach( $bundled_items as $item_key ) {
-				$qty = $cart->cart_contents[ $item_key ]['tbt_shared_qty'];
+				$qty = $cart->cart_contents[ $item_key ]['tbt_shared_qty'] * $quantity;
 				$cart->cart_contents[ $item_key ]['quantity'] = $qty;
 			}
 
@@ -600,6 +600,7 @@ class Tbt_Shared_Inventory_Public {
 	 * @return void
 	 */
 	function tbt_shared_inventory_item_visible( $visible, $cart_item ) {
+
 		if ( isset( $cart_item['tbt_shared_parent_id'] ) ) {
 			return false;
 		}
@@ -728,6 +729,28 @@ class Tbt_Shared_Inventory_Public {
 		}
 
 		return $subtotal;
+	}
+
+	/**
+	 * Load cart from sesstion
+	 *
+	 * @param mixed $cart_item
+	 * @param mixed $session_values
+	 * @return mixed $cart_item
+	 */
+	function tbt_shared_inventory_get_cart_item_from_session( $cart_item, $session_values ) {
+
+		if ( ! empty( $session_values['tbt_shared_child_ids'] ) ) {
+			$cart_item['tbt_shared_child_ids'] = $session_values['tbt_shared_child_ids'];
+		}
+
+		if ( ! empty( $session_values['woosb_parent_id'] ) ) {
+			$cart_item['tbt_shared_parent_id']  = $session_values['tbt_shared_parent_id'];
+			$cart_item['tbt_shared_parent_key'] = $session_values['tbt_shared_parent_key'];
+			$cart_item['tbt_shared_qty']        = $session_values['tbt_shared_qty'];
+		}
+
+		return $cart_item;
 	}
 
 	/**

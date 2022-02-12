@@ -208,6 +208,7 @@ class Tbt_Shared_Inventory {
 		$this->loader->add_filter( 'woocommerce_cart_contents_count', $plugin_public, 'tbt_shared_inventory_cart_contents_count' );
 		$this->loader->add_action( 'woocommerce_cart_item_removed', $plugin_public, 'tbt_shared_inventory_cart_item_removed', 10, 2 );
 		$this->loader->add_action( 'woocommerce_restore_cart_item', $plugin_public, 'tbt_shared_inventory_restore_cart_item', 10, 1 );
+		$this->loader->add_filter( 'woocommerce_get_cart_item_from_session', $plugin_public, 'tbt_shared_inventory_get_cart_item_from_session', 10, 2 );
 		$this->loader->add_filter( 'woocommerce_cart_item_quantity', $plugin_public, 'tbt_shared_inventory_cart_item_quantity', 10, 3 );
 		$this->loader->add_filter( 'woocommerce_cart_item_price', $plugin_public, 'tbt_shared_inventory_cart_item_price', 10, 2 );
 		$this->loader->add_filter( 'woocommerce_cart_item_subtotal', $plugin_public, 'tbt_shared_inventory_cart_item_subtotal', 10, 2 );
