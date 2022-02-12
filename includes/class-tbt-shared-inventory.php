@@ -223,6 +223,10 @@ class Tbt_Shared_Inventory {
 		$this->loader->add_filter( 'woocommerce_hidden_order_itemmeta', $plugin_public, 'tbt_shared_hidden_order_item_meta', 10, 1 );
 		$this->loader->add_filter( 'woocommerce_order_formatted_line_subtotal', $plugin_public, 'tbt_shared_order_formatted_line_subtotal', 10, 2 );
 
+		// Order again
+		$this->loader->add_filter( 'woocommerce_order_again_cart_item_data', $plugin_public, 'tbt_shared_order_again_item_data', 10, 2 );
+		$this->loader->add_action( 'woocommerce_cart_loaded_from_session', $plugin_public, 'tbt_shared_cart_loaded_from_session' );
+
 	}
 
 	/**

@@ -732,7 +732,7 @@ class Tbt_Shared_Inventory_Public {
 	}
 
 	/**
-	 * Load cart from sesstion
+	 * Load cart from session
 	 *
 	 * @param mixed $cart_item
 	 * @param mixed $session_values
@@ -751,6 +751,56 @@ class Tbt_Shared_Inventory_Public {
 		}
 
 		return $cart_item;
+	}
+
+	/**
+	 * Set item data on reorder
+	 *
+	 * @param mixed $data
+	 * @param mixed $item
+	 * @return void
+	 */
+	function tbt_shared_order_again_item_data( $data, $item ) {
+		if ( $child_ids = $item->get_meta( '_tbt_shared_child_ids' ) ) {
+			$data['tbt_shared_order_again'] = 'yes';
+			$data['tbt_shared_child_ids']   = $child_ids;
+		}
+
+		if ( $tbt_shared_parent_id = $item->get_meta( '_tbt_shared_parent_id' ) ) {
+			$data['tbt_shared_order_again'] = 'yes';
+			$data['tbt_shared_parent_id']   = $tbt_shared_parent_id;
+		}
+
+		return $data;
+	}
+
+	/**
+	 * Set cart contents on reorder 
+	 *
+	 * @return void
+	 */
+	function tbt_shared_cart_loaded_from_session() {
+		foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
+			// remove bundled products first
+			if ( isset( $cart_item['tbt_shared_order_again'], $cart_item['tbt_shared_parent_id'] ) ) {
+				WC()->cart->remove_cart_item( $cart_item_key );
+			}
+
+			if ( isset( $cart_item['tbt_shared_order_again'], $cart_item['tbt_shared_child_ids'] ) ) {
+				unset( WC()->cart->cart_contents[ $cart_item_key ]['tbt_shared_order_again'] );
+				$passed = $this->tbt_shared_inventory_check_stock_cart(true, $cart_item['product_id'], $cart_item['quantity'], $cart_item['variation_id']);
+				if ( $passed ){
+ 					$this->tbt_shared_inventory_split_order_bundle( 
+						$cart_item_key, 
+						$cart_item['product_id'], 
+						$cart_item['quantity'], 
+						$cart_item['variation_id'], 
+						null, 
+						null 
+					);
+				}
+			}
+		}
 	}
 
 	/**
