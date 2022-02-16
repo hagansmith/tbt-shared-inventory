@@ -417,64 +417,6 @@ class Tbt_Shared_Inventory_Admin {
 	}
 
 	/**
-	 * adjust stock of other items (for multiple product bundles ie a new product consisting of 2 or more different products)
-	 *
-	 * @param integer $order_id
-	 * @return void
-	 */
-	function tbt_shared_inventory_order_reduce_stock( $order_id ) {
-		error_log("maybe reducing");
-		$order_processed = get_post_meta( $order_id, '_tbt_shared_inventory_processed', true );
-
-		if ( $order_processed ) {
-			return;
-		}
-		error_log("reducing");
-		$order = wc_get_order( $order_id );
-		$order_items = $order->get_items();
-
-		foreach( $order_items as $item ) {
-			$product_id    = $item->get_product_id();
-			$variation_id  = $item->get_variation_id();
-			$item_quantity = $item->get_quantity();
-			$quantity	   = 1;
-
-			// allow other plugins to modify quantity
-			$filtered_qty = apply_filters( 'woocommerce_order_item_quantity', $item->get_quantity(), $order, $item );
-			
-			if ( $item->get_product()->is_type( 'variation' ) && $item->get_product()->is_virtual() ) {
-				continue;
-			}
-
-			//get variation count settings
-			$multiplier = $item->get_product()->get_meta( '_tbt_shared_inventory_count' );
-		
-			if ( empty( $multiplier ) && $item->get_product()->is_type( 'variation' ) ) {
-				$product = wc_get_product( $item->get_product()->get_parent_id() );
-				$multiplier = $product->get_meta( '_tbt_shared_inventory_count' );
-			}
-		
-			if ( empty( $multiplier ) || 1 == $multiplier ) {
-				continue;
-			} else {
-				$quantity = $multiplier * $item_quantity;
-			}
-
-			$product = wc_get_product( $product_id );
-		
-			if ( ! $product->managing_stock() || $quantity <= 1 ) {
-				continue;
-			}
-	
-			// adjust the product stock
-			wc_update_product_stock( $product, $quantity, 'decrease' );
-		}
-
-		update_post_meta( $order_id, '_tbt_shared_inventory_processed', true );
-
-	}
-
-	/**
 	 * adjust stock counts back up using the multiplier value
 	 * the returned stock value is already adjusted up for the amount returned so we take that into account too.
 	 * 
@@ -486,38 +428,32 @@ class Tbt_Shared_Inventory_Admin {
 		
 		$restock_items = $_POST['restock_refunded_items'];
 
-		if ( !empty( $refund_id ) && empty( $restock_items ) ) {
+		if ( !$restock_items ) {
 			return;
 		}
 
-		$order_processed = get_post_meta( $order_id, '_tbt_shared_inventory_processed', true );
+		$order 		 = wc_get_order( $refund_id );
+		$order_items = $order->get_items();
 
-		if ( $order_processed ) {
-			$order 		 = empty($refund_id) ? wc_get_order( $order_id ) : wc_get_order( $refund_id );
-			$order_items = $order->get_items();
-
-			foreach( $order_items as $item ) {
-				$product_id 				  = $item->get_product_id();
-				$variation_id 				  = $item->get_variation_id();
-				$item_quantity_returned 	  = abs( $item->get_quantity() );
-				$multiplier 				  = !empty( $item->get_product()->get_meta( '_tbt_shared_inventory_count' ) ) ? $item->get_product()->get_meta( '_tbt_shared_inventory_count' ) : 1;
-				$item_stock_quantity_returned = $item_quantity_returned * $multiplier - $item_quantity_returned;
-				
-				if ( 1 == $multiplier || ( $item->get_product()->is_type( 'variation' ) && $item->get_product()->is_virtual() ) ) {
-					continue;
-				}
-
-				$product = wc_get_product( $product_id );
-
-				if ( ! $product->managing_stock() ) {
-					continue;
-				}
-		
-				// adjust the product stock for the total number of items returned
-				wc_update_product_stock( $product, $item_stock_quantity_returned, 'increase' );
-				
+		foreach( $order_items as $item ) {
+			$product_id 				  = $item->get_product_id();
+			$variation_id 				  = $item->get_variation_id();
+			$item_quantity_returned 	  = abs( $item->get_quantity());
+			$multiplier 				  = !empty( $item->get_product()->get_meta( '_tbt_shared_inventory_count' ) ) ? $item->get_product()->get_meta( '_tbt_shared_inventory_count' ) : 1;
+			$item_stock_quantity_returned = $item_quantity_returned * $multiplier - $item_quantity_returned;
+			
+			if ( 1 == $multiplier) {
+				continue;
 			}
-
+			
+			$product = wc_get_product( $product_id );
+			if ( ! $product->managing_stock() ) {
+				continue;
+			}
+	
+			// adjust the product stock for the total number of items returned
+			wc_update_product_stock( $product, $item_stock_quantity_returned, 'increase' );
+			
 		}
 
 	}

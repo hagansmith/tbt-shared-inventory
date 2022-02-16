@@ -70,7 +70,7 @@ class Tbt_Shared_Inventory {
 		if ( defined( 'TBT_SHARED_INVENTORY_VERSION' ) ) {
 			$this->version = TBT_SHARED_INVENTORY_VERSION;
 		} else {
-			$this->version = '1.0.5';
+			$this->version = '1.0.1';
 		}
 		$this->plugin_name = 'tbt-shared-inventory';
 
@@ -172,6 +172,9 @@ class Tbt_Shared_Inventory {
 		$this->loader->add_action( 'wp_ajax_get_wc_products', $plugin_admin, 'get_wc_products');
 		$this->loader->add_action( 'woocommerce_variation_options', $plugin_admin, 'tbt_shared_inventory_variation_add_is_bundle_option', 20, 3 );
 		$this->loader->add_action( 'wp_ajax_get_new_product_row', $plugin_admin, 'tbt_shared_inventory_ajax_get_product_row');
+		
+		// adjust stock accordingly after return
+		$this->loader->add_action( 'woocommerce_order_partially_refunded', $plugin_admin, 'tbt_shared_inventory_order_return_to_stock', 10, 2);
 		
 	}
 
