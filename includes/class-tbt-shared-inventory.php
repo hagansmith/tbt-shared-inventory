@@ -70,7 +70,7 @@ class Tbt_Shared_Inventory {
 		if ( defined( 'TBT_SHARED_INVENTORY_VERSION' ) ) {
 			$this->version = TBT_SHARED_INVENTORY_VERSION;
 		} else {
-			$this->version = '1.0.1';
+			$this->version = '1.0.5';
 		}
 		$this->plugin_name = 'tbt-shared-inventory';
 
@@ -157,8 +157,6 @@ class Tbt_Shared_Inventory {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
-		// $this->loader->add_action( 'init', $plugin_admin, 'tbt_share_inventory_register_acf_fields', 15 );
-
 		//add option to product
 		$this->loader->add_action( 'woocommerce_product_options_related', $plugin_admin, 'tbt_shared_inventory_add_product_related_option');
 		$this->loader->add_action( 'woocommerce_process_product_meta', $plugin_admin, 'tbt_shared_inventory_save_product_related_setting', 10, 2 );
@@ -168,17 +166,13 @@ class Tbt_Shared_Inventory {
 		//add options to product variations
 		$this->loader->add_action( 'woocommerce_variation_options_pricing', $plugin_admin, 'tbt_shared_inventory_add_variation_stock_options', 20, 3 );
 		$this->loader->add_action( 'woocommerce_save_product_variation', $plugin_admin, 'tbt_shared_inventory_save_variation_reduction_setting', 10, 2 );
-		$this->loader->add_action( 'woocommerce_order_item_quantity', $plugin_admin, 'tbt_shared_inventory_stock_adjustment', 10, 3 );
+		$this->loader->add_action( 'woocommerce_order_item_quantity', $plugin_admin, 'tbt_shared_inventory_order_item_quantity', 10, 3 );
+		$this->loader->add_filter( 'woocommerce_prevent_adjust_line_item_product_stock', $plugin_admin, 'tbt_shared_inventory_prevent_adjust_line_item_product_stock', 10, 3 );
+
 		$this->loader->add_action( 'wp_ajax_get_wc_products', $plugin_admin, 'get_wc_products');
 		$this->loader->add_action( 'woocommerce_variation_options', $plugin_admin, 'tbt_shared_inventory_variation_add_is_bundle_option', 20, 3 );
 		$this->loader->add_action( 'wp_ajax_get_new_product_row', $plugin_admin, 'tbt_shared_inventory_ajax_get_product_row');
 		
-		// adjust stock accordingly after checkout
-		$this->loader->add_action('woocommerce_order_status_completed', $plugin_admin, 'tbt_shared_inventory_order_reduce_stock', 10, 1);
-		$this->loader->add_action('woocommerce_order_status_on-hold', $plugin_admin, 'tbt_shared_inventory_order_reduce_stock', 10, 1);
-		$this->loader->add_action('woocommerce_order_status_processing', $plugin_admin, 'tbt_shared_inventory_order_reduce_stock', 10, 1);
-		// $this->loader->add_action( 'woocommerce_order_status_cancelled', $plugin_admin, 'tbt_shared_inventory_order_return_to_stock', 10, 1);
-		$this->loader->add_action( 'woocommerce_order_partially_refunded', $plugin_admin, 'tbt_shared_inventory_order_return_to_stock', 10, 2);
 	}
 
 	/**
