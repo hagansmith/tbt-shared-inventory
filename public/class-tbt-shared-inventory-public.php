@@ -392,7 +392,7 @@ class Tbt_Shared_Inventory_Public {
 				}
 			}
 
-			$parent_price = ( $product->get_price() - $bundled_items_total ) / $ordered_qty;
+			$parent_price = ( ( $product->get_price() * $ordered_qty ) - $bundled_items_total ) / $ordered_qty;
 			$cart->cart_contents[ $cart_item_key ]['tbt_shared_price'] = $parent_price < 0 ? 0 : $parent_price;
 
 		}
@@ -693,7 +693,7 @@ class Tbt_Shared_Inventory_Public {
 	 * Get the count of items for the order to only include the quantity of the parent bundle
 	 * and any other products in the cart (exclude bundle children from the count)
 	 *
-	 * @param intger $count
+	 * @param int $count
 	 * @param string $type
 	 * @param mixed $order WC_Order
 	 * @return void
@@ -722,7 +722,7 @@ class Tbt_Shared_Inventory_Public {
 	 * @return void
 	 */
 	function tbt_shared_order_formatted_line_subtotal( $subtotal, $order_item ) {
-
+		error_log("yeah here");
 		if ( isset( $order_item['_tbt_shared_child_ids'], $order_item['_tbt_shared_price'] ) || !empty( $order_item->get_meta( '_tbt_shared_child_ids', TRUE ) ) ) {
 			$product = wc_get_product( $order_item['variation_id'] === 0 ? $order_item['product_id'] : $order_item['variation_id'] );
 			return wc_price( $product->get_price() * $order_item['quantity'] );
